@@ -1,1 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Élan Getaways — Destinations Map</title>
+
+  <link rel="icon" type="image/png" href="eg.webp"/>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin="anonymous"
+  />
+  <!-- MarkerCluster CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+  />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+  />
+
+  <meta
+    name="description"
+    content="Explore Élan Getaways' curated map of the world's finest resorts, cruises, and city escapes. Filter by region, search by vibe, and plan your next luxury escape."
+  />
+  <link rel="canonical" href="https://elangetaways.com/destinations"/>
+
+  <meta property="og:title" content="Élan Getaways — Destinations Map"/>
+  <meta property="og:description" content="Gold-pin map of the world's best luxury destinations. Filter, search, and plan your next escape."/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:image" content="https://elangetaways.com/og-destinations.webp"/>
+  <meta property="og:url" content="https://elangetaways.com/destinations"/>
+
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Élan Getaways — Destinations Map"/>
+  <meta name="twitter:description" content="Gold-pin map of the world's best luxury destinations. Filter, search, and plan your next escape."/>
+  <meta name="theme-color" content="#0a2540"/>
+
+  <script id="destinations-ld" type="application/ld+json"></script>
+
+  <!-- AdSense (existing client) -->
+  <script
+    async
+    crossorigin="anonymous"
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5379174458602427">
+  </script>
+
+  <style>
+    :root{
+      --eg-gold:#d4af37; --eg-gold2:#FFD97A; --eg-gold3:#B88A2D;
+      --eg-navy:#0a2540; --eg-ivory:#faf8f5; --eg-char:#111;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--eg-ivory);
+      color:#222;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* Ad helpers */
+    .eg-ad{margin:16px auto;max-width:100%}
+    .eg-ad-hero{margin-top:12px}
+    .eg-ad-footer{margin-top:12px}
+
+    /* Header */
+    .header{
+      position:sticky;top:0;z-index:1000;
+      display:flex;align-items:center;gap:.75rem;
+      padding:.6rem .9rem;
+      background:var(--eg-navy);color:#fff;
+      border-bottom:1px solid rgba(255,255,255,.12);
+      box-shadow:0 4px 14px rgba(0,0,0,.12);
+    }
+    .header img{height:36px}
+    .header h1{
+      margin:0;
+      font-size:1.05rem;
+      font-weight:800;
+      letter-spacing:.02em;
+    }
+    .header .pill{
+      margin-left:auto;
+      display:inline-flex;
+      align-items:center;
+      padding:.45rem .85rem;
+      border-radius:999px;
+      background:linear-gradient(135deg,#e6d3a5,#bda06a);
+      color:#111;
+      font-weight:800;
+      text-decoration:none;
+      white-space:nowrap;
+      box-shadow:0 4px 14px rgba(0,0,0,.18);
+    }
+
+    /* Hero */
+    .hero-intro{
+      margin:.9rem;
+      border-radius:16px;
+      overflow:hidden;
+    }
+    .hero-wrap{
+      background:
+        radial-gradient(1200px 300px at 20% -100px, rgba(212,175,55,.18), transparent),
+        linear-gradient(180deg,#0a2540,#112233);
+      padding:1.25rem 1.2rem;
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 14px 36px rgba(0,0,0,.22);
+      border-radius:16px;
+    }
+    .hero-copy h2{
+      margin:.1rem 0 .3rem;
+      font:700 1.4rem/1.15 "Playfair Display",Georgia,serif;
+      color:#fff;
+      letter-spacing:.02em;
+    }
+    .hero-copy p{
+      margin:.25rem 0 .9rem;
+      color:#dfe8f3;
+      max-width:64ch;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      padding:.5rem .8rem;
+      border-radius:10px;
+      font-weight:800;
+      border:1px solid #ddd;
+      background:#fff;
+      cursor:pointer;
+      text-decoration:none;
+      color:#111;
+      font-size:.95rem;
+    }
+    .btn.gold{
+      background:linear-gradient(135deg,var(--eg-gold),var(--eg-gold2));
+      border:1px solid rgba(0,0,0,.08);
+      box-shadow:0 6px 14px rgba(212,175,55,.25);
+    }
+    .btn.big{
+      font-size:1.02rem;
+      padding:.65rem 1rem;
+      border-radius:12px;
+    }
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+
+    .sticky-cta{
+      position:fixed;
+      right:14px;bottom:14px;z-index:1200;
+      background:linear-gradient(135deg,#d4af37,#ffd97a);
+      color:#111;
+      font-weight:900;
+      text-decoration:none;
+      padding:.7rem 1rem;
+      border-radius:999px;
+      box-shadow:0 12px 26px rgba(212,175,55,.35);
+      border:1px solid rgba(0,0,0,.08);
+    }
+
+    /* Controls */
+    .controls{
+      display:grid;
+      gap:.6rem;
+      grid-template-columns:1fr;
+      padding:.6rem .9rem;
+      background:#fff;
+      border:1px solid #eee;
+      border-radius:16px 16px 0 0;
+      margin:0 .9rem;
+      border-bottom:none;
+    }
+    .controls-row{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:.5rem .6rem;
+    }
+    .search{
+      flex:1 1 260px;
+      display:flex;
+      align-items:center;
+      gap:.4rem;
+      background:#fff;
+      border:1px solid #ddd;
+      border-radius:12px;
+      padding:.45rem .6rem;
+    }
+    .search input{
+      border:0;
+      outline:0;
+      flex:1;
+      font-size:1rem;
+      background:transparent;
+    }
+    .sep{
+      flex:0 0 1px;
+      height:26px;
+      background:#e6e6e6;
+      margin:0 .2rem;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      padding:.38rem .65rem;
+      border-radius:999px;
+      background:#fbfbfb;
+      border:1px solid #eee;
+      cursor:pointer;
+      user-select:none;
+      font-weight:700;
+      font-size:.9rem;
+    }
+    .chip input{display:none}
+    .chip[data-active="true"]{
+      background:linear-gradient(135deg,var(--eg-gold),var(--eg-gold2));
+      color:#111;
+      border-color:rgba(0,0,0,.08);
+    }
+    .chip:focus{
+      outline:2px solid #0a254033;
+      outline-offset:2px;
+    }
+    .sort-wrap{
+      margin-left:auto;
+      display:flex;
+      align-items:center;
+      gap:.4rem;
+      font-size:.9rem;
+    }
+    .select{
+      border:1px solid #ddd;
+      border-radius:10px;
+      padding:.45rem .55rem;
+      background:#fff;
+      font-weight:700;
+      font-size:.9rem;
+    }
+    .notice{
+      font-size:.9rem;
+      color:#555;
+    }
+
+    /* Map */
+    #map{
+      height:56vh;
+      min-height:380px;
+      border-radius:0 0 16px 16px;
+      box-shadow:0 12px 28px rgba(0,0,0,.12);
+      margin:0 .9rem 0;
+      width:calc(100% - 1.8rem);
+    }
+    @media (min-width:900px){
+      #map{height:64vh;}
+    }
+
+    /* List + cards */
+    .panel{
+      padding:.75rem .9rem 1rem;
+      background:#fff;
+      border:1px solid #eee;
+      border-radius:0 0 16px 16px;
+      border-top:none;
+      margin:0 .9rem 1rem;
+    }
+    .panel h2{
+      font-family:"Playfair Display",Georgia,serif;
+      margin:.25rem 0 .5rem;
+      font-size:1.35rem;
+      background-image:linear-gradient(135deg,var(--eg-gold) 0%,var(--eg-gold2) 45%,var(--eg-gold3) 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+    .grid{
+      display:grid;
+      gap:.6rem;
+      grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+    }
+    .card{
+      border:1px solid #eee;
+      border-radius:12px;
+      padding:.6rem .7rem;
+      background:#fff;
+      box-shadow:0 2px 8px rgba(0,0,0,.05);
+      transition:transform .2s ease,box-shadow .2s ease;
+    }
+    .card:hover{
+      transform:translateY(-2px);
+      box-shadow:0 6px 18px rgba(0,0,0,.08);
+    }
+    .card h3{
+      margin:.25rem 0 .25rem;
+      font-size:1.02rem;
+    }
+    .card .meta{
+      color:#666;
+      font-size:.9rem;
+    }
+    .pill-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.35rem;
+      margin:.35rem 0;
+    }
+    .pill{
+      display:inline-block;
+      padding:.2rem .5rem;
+      border-radius:8px;
+      font-size:.8rem;
+      font-weight:700;
+      background:#f4f4f4;
+      border:1px solid #eee;
+      color:#444;
+    }
+    .card .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.4rem;
+      margin-top:.4rem;
+    }
+
+    /* Partners */
+    .partners{
+      margin:0 .9rem 1rem;
+      padding:.9rem 1rem 1.1rem;
+      background:#fff;
+      border:1px solid #eee;
+      border-radius:16px;
+      box-shadow:0 8px 22px rgba(0,0,0,.06);
+    }
+    .partners h2{
+      font-family:"Playfair Display",Georgia,serif;
+      margin:.1rem 0 .6rem;
+      font-size:1.35rem;
+      background-image:linear-gradient(135deg,#C9A34E 0%,#FFD97A 45%,#B88A2D 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+    .partner-grid{
+      display:grid;
+      gap:.8rem;
+      grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+    }
+    .partner-card{
+      background:#fafafa;
+      border:1px solid #eee;
+      border-radius:12px;
+      padding:.75rem .8rem;
+      display:flex;
+      flex-direction:column;
+      gap:.45rem;
+    }
+    .partner-card h3{
+      margin:.1rem 0;
+      font-size:1.05rem;
+    }
+    .partner-card p{
+      margin:0;
+      color:#555;
+      font-size:.95rem;
+    }
+    .partner-card .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.45rem;
+      margin-top:.2rem;
+    }
+    .badge-soon{
+      display:inline-block;
+      padding:.18rem .45rem;
+      border-radius:8px;
+      background:#0a2540;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.12);
+      font-size:.75rem;
+      font-weight:800;
+      letter-spacing:.02em;
+      margin-left:.35rem;
+    }
+
+    /* Coming soon regions */
+    .soon{
+      margin:0 .9rem 1.2rem;
+      padding:.75rem .9rem 1rem;
+      background:#fff;
+      border:1px dashed #e2c97e;
+      border-radius:16px;
+    }
+    .soon h3{
+      margin:.1rem 0 .5rem;
+      font:700 1.15rem/1.2 "Playfair Display",Georgia,serif;
+      background-image:linear-gradient(135deg,#C9A34E 0%,#FFD97A 40%,#B88A2D 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+    .soon .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.45rem;
+    }
+    .soon .tag{
+      display:inline-block;
+      padding:.35rem .6rem;
+      border-radius:999px;
+      background:#0a2540;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.12);
+      font-weight:800;
+      font-size:.85rem;
+      letter-spacing:.02em;
+    }
+
+    /* Footer */
+    .footer{
+      margin:0 .9rem 1.4rem;
+      padding:.9rem 1rem 1.1rem;
+      background:#fff;
+      border:1px solid #eee;
+      border-radius:16px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:.5rem 1rem;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .footer small{color:#666}
+    .footer a{
+      font-weight:800;
+      color:#111;
+      text-decoration:none;
+      border-bottom:2px solid rgba(212,175,55,.4);
+    }
+    .footer a:hover{border-bottom-color:rgba(212,175,55,.9);}
+
+    /* Leaflet pin cursor */
+    .leaflet-marker-icon,.leaflet-marker-shadow{cursor:pointer}
+  </style>
+</head>
+<body>
+<header class="header">
+  <img src="eg.webp" alt="Élan Getaways logo" loading="lazy"/>
+  <h1>Destinations</h1>
+  <a class="pill" href="/">← Back to Home</a>
+</header>
+
+<section class="hero-intro">
+  <div class="hero-wrap">
+    <div class="hero-copy">
+      <h2>Where will your next story begin?</h2>
+      <p>
+        Hand-picked islands, iconic resorts, and world-class cruises—mapped for travelers
+        who care about both the details and the view. Browse the pins, filter by vibe,
+        and tap through to full guides and offers.
+      </p>
+
+      <!-- Hero Ad -->
+      <div class="eg-ad eg-ad-hero">
+        <ins class="adsbygoogle"
+             style="display:block; text-align:center;"
+             data-ad-client="ca-pub-5379174458602427"
+             data-ad-slot="2222222222"
+             data-ad-format="fluid"
+             data-full-width-responsive="true"></ins>
+      </div>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+
+      <a class="btn gold big" href="/#plan-escape">Plan Your Next Escape</a>
+    </div>
+  </div>
+</section>
+
+<a class="sticky-cta" href="/#plan-escape" aria-label="Plan your next escape">
+  ✦ Plan Your Next Escape
+</a>
+
+<section class="controls" aria-label="Filters and tools">
+  <div class="controls-row">
+    <div class="search" role="search">
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24">
+        <path fill="#888"
+              d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79L20 21.5 21.5 20l-6-6zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      </svg>
+      <input id="search" type="search" placeholder="Search destinations, regions, vibes…" aria-label="Search destinations"/>
+    </div>
+
+    <span class="sep" aria-hidden="true"></span>
+
+    <label class="chip" data-filter="type" data-value="all" data-active="true" tabindex="0">
+      <input type="radio" name="type" value="all" checked>All
+    </label>
+    <label class="chip" data-filter="type" data-value="resort" tabindex="0">
+      <input type="radio" name="type" value="resort">Resorts
+    </label>
+    <label class="chip" data-filter="type" data-value="cruise" tabindex="0">
+      <input type="radio" name="type" value="cruise">Cruises
+    </label>
+    <label class="chip" data-filter="type" data-value="city" tabindex="0">
+      <input type="radio" name="type" value="city">Cities
+    </label>
+
+    <span class="sep" aria-hidden="true"></span>
+
+    <button class="btn" id="locate" type="button" title="Use my location">📍 Locate me</button>
+    <button class="btn" id="reset" type="button" title="Reset map & filters">↺ Reset</button>
+    <button class="btn gold" id="download" type="button" title="Export CSV of visible destinations">⬇︎ Export CSV</button>
+
+    <div class="sort-wrap">
+      Sort:
+      <select class="select" id="sort">
+        <option value="az">A–Z</option>
+        <option value="region">Region</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="controls-row" id="region-chips" aria-label="Region filters"></div>
+  <div class="notice" id="result-count" aria-live="polite"></div>
+</section>
+
+<div id="map" aria-label="Destinations map" role="region"></div>
+
+<section class="panel" aria-labelledby="list-title">
+  <h2 id="list-title">Featured Destinations</h2>
+  <div class="grid" id="dest-list"></div>
+</section>
+
+<section class="partners" aria-labelledby="partners-title">
+  <h2 id="partners-title">Preferred Travel Partners</h2>
+  <div class="partner-grid">
+    <div class="partner-card">
+      <h3>Regent Seven Seas Cruises</h3>
+      <p>All-inclusive luxury ocean voyages with fine dining and immersive excursions.</p>
+      <div class="actions">
+        <a class="btn" href="blog-regent.html">Regent overview</a>
+        <!-- direct deep link as provided -->
+        <a class="btn gold" href="https://expedia.com/affiliate/MnwIWpq" target="_blank" rel="noopener noreferrer">
+          View cruises on Expedia
+        </a>
+      </div>
+    </div>
+
+    <div class="partner-card">
+      <h3>Ritz-Carlton Nikko</h3>
+      <p>Lakeside serenity at Chūzenji, onsen culture, and easy access to Nikkō shrines.</p>
+      <div class="actions">
+        <a class="btn" href="blog-nikko.html">Nikkō guide</a>
+        <!-- affiliate URL exactly as provided -->
+        <a class="btn gold" href="https://www.expedia.com/affiliates/nikko-hotels-the-ritz-carlton.hE1djXF" target="_blank" rel="noopener noreferrer">
+          Ritz-Carlton Nikko offers
+        </a>
+      </div>
+    </div>
+
+    <div class="partner-card">
+      <h3>Sandals & Caribbean Resorts</h3>
+      <p>Adults-only overwater bungalows, private islands, and all-inclusive Caribbean stays.</p>
+      <div class="actions">
+        <a class="btn" href="blog-sandals.html">Caribbean overwater guide</a>
+        <!-- one of your general affiliate codes -->
+        <a class="btn gold" href="https://www.expedia.com/affiliate/8BgdsuR" target="_blank" rel="noopener noreferrer">
+          Caribbean offers on Expedia
+        </a>
+      </div>
+    </div>
+
+    <div class="partner-card">
+      <h3>Élan x Expedia</h3>
+      <p>Compare flights, hotels, and packages while keeping your Élan Getaways perks in mind.</p>
+      <div class="actions">
+        <a class="btn" href="blog.html#expedia">How I use Expedia</a>
+        <a class="btn gold" href="https://www.expedia.com/affiliate/06JoIUe" target="_blank" rel="noopener noreferrer">
+          Open Expedia with my ID
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="soon" aria-labelledby="soon-title">
+  <h3 id="soon-title">Coming Soon Regions</h3>
+  <div class="chips">
+    <span class="tag">Greece &amp; the Med (Santorini, Mykonos)</span>
+    <span class="tag">Seychelles</span>
+    <span class="tag">Bali &amp; Indonesia</span>
+    <span class="tag">Dubai &amp; Abu Dhabi</span>
+    <span class="tag">Alaska Cruises</span>
+    <span class="tag">African Safari + Zanzibar</span>
+    <span class="tag">Amalfi Coast roadtrips</span>
+    <span class="tag">Turks &amp; Caicos</span>
+    <span class="tag">Mauritius</span>
+    <span class="tag">Phuket &amp; Krabi</span>
+  </div>
+</section>
+
+<footer class="footer">
+  <small>© Élan Getaways — Luxury travel, done right.</small>
+  <a href="/#plan-escape">Plan Your Next Escape</a>
+
+  <div class="eg-ad eg-ad-footer">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-5379174458602427"
+         data-ad-slot="3333333333"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+  </div>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</footer>
+
+<!-- Your helper data file (already exists) -->
+<script defer src="expediaLinks.js"></script>
+<!-- Leaflet core -->
+<script
+  defer
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin="anonymous">
+</script>
+<!-- MarkerCluster -->
+<script defer src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+<script>
+(function(){
+  "use strict";
+
+  function slug(s){
+    return s.toLowerCase()
+      .replace(/&/g," and ")
+      .replace(/[^a-z0-9]+/g,"-")
+      .replace(/^-+|-+$/g,"");
+  }
+
+  // Core curated list; links point to your existing blog pages
+  const DESTINATIONS = [
+    {
+      name: "Four Seasons Resort Bora Bora",
+      region: "French Polynesia",
+      type: "resort",
+      lat: -16.5004,
+      lng: -151.7415,
+      detailHref: "luxury-travel-blogs.html#four-seasons-bora-bora",
+      note: "Iconic overwater villas, lagoon views, and textbook-turquoise water.",
+      bestMonths: "May–Oct",
+      tags: ["Overwater villas","Honeymoon","Snorkeling"]
+    },
+    {
+      name: "The Brando",
+      region: "Tetiaroa, French Polynesia",
+      type: "resort",
+      lat: -17.000,
+      lng: -149.583,
+      detailHref: "luxury-travel-blogs.html#the-brando",
+      note: "Eco-luxury on Marlon Brando’s former private atoll; ultra-low-key and private.",
+      bestMonths: "May–Oct",
+      tags: ["Eco-luxury","Private island"]
+    },
+    {
+      name: "Adaaran Prestige Water Villas",
+      region: "Maldives",
+      type: "resort",
+      lat: 5.753,
+      lng: 73.352,
+      detailHref: "luxury-travel-blogs.html#adaaran-prestige-water-villas",
+      note: "Small, intimate Maldivian overwater escape with butler service.",
+      bestMonths: "Dec–Apr",
+      tags: ["Overwater villas","Butler service"]
+    },
+    {
+      name: "The Ritz-Carlton Maldives, Fari Islands",
+      region: "Maldives",
+      type: "resort",
+      lat: 4.308,
+      lng: 73.468,
+      detailHref: "luxury-travel-blogs.html#ritz-carlton-maldives-fari",
+      note: "Modern design, serious dining, and a house reef that actually matters.",
+      bestMonths: "Dec–Apr",
+      tags: ["Design-forward","House reef"]
+    },
+    {
+      name: "One&Only Reethi Rah",
+      region: "Maldives",
+      type: "resort",
+      lat: 4.454,
+      lng: 73.354,
+      detailHref: "blog-reethi-rah.html",
+      note: "Flagship private-island resort with big-villa energy and polished service.",
+      bestMonths: "Dec–Apr",
+      tags: ["Private island","Families & couples"]
+    },
+    {
+      name: "Sandals Royal Caribbean",
+      region: "Montego Bay, Jamaica",
+      type: "resort",
+      lat: 18.521,
+      lng: -77.896,
+      detailHref: "luxury-travel-blogs.html#sandals-royal-caribbean",
+      note: "Adults-only, private offshore island, and Caribbean-overwater bungalows.",
+      bestMonths: "Dec–Apr",
+      tags: ["Adults-only","Overwater villas","All-inclusive"]
+    },
+    {
+      name: "Sandals Grande St. Lucian",
+      region: "Gros Islet, St. Lucia",
+      type: "resort",
+      lat: 14.091,
+      lng: -60.954,
+      detailHref: "luxury-travel-blogs.html#sandals-grande-st-lucian",
+      note: "Sheltered bay, Piton views, and Caribbean color without feeling chaotic.",
+      bestMonths: "Dec–Apr",
+      tags: ["Adults-only","Calm water"]
+    },
+    {
+      name: "Sandals Royal Bahamian",
+      region: "Nassau, Bahamas",
+      type: "resort",
+      lat: 25.079,
+      lng: -77.396,
+      detailHref: "luxury-travel-blogs.html#sandals-royal-bahamian",
+      note: "Quick flights, offshore island, and winter-sun sweet spot.",
+      bestMonths: "Dec–Apr",
+      tags: ["Adults-only","Quick hop"]
+    },
+    {
+      name: "Capella Bangkok",
+      region: "Bangkok, Thailand",
+      type: "city",
+      lat: 13.704,
+      lng: 100.514,
+      detailHref: "blog.html#capella-bangkok",
+      note: "Riverside suites, boat access, and some of the best dining in the city.",
+      bestMonths: "Nov–Feb",
+      tags: ["City + river","Food-focused"]
+    },
+    {
+      name: "Ritz-Carlton Naples",
+      region: "Naples, Florida, USA",
+      type: "resort",
+      lat: 26.236,
+      lng: -81.821,
+      detailHref: "blog.html#ritz-carlton-naples",
+      note: "Gulf-front sunsets, golf, and winter-escape energy without needing a passport.",
+      bestMonths: "Nov–Apr",
+      tags: ["USA winter sun","Golf"]
+    },
+    {
+      name: "Six Senses Zil Pasyon",
+      region: "Félicité Island, Seychelles",
+      type: "resort",
+      lat: -4.330,
+      lng: 55.840,
+      detailHref: "blog-seychelles.html",
+      note: "Granite boulders, jungle hills, and villas that feel carved into the island.",
+      bestMonths: "Apr–Nov",
+      tags: ["Eco-luxury","Private island"]
+    },
+    {
+      name: "Amalfi Coast Highlights",
+      region: "Campania, Italy",
+      type: "city",
+      lat: 40.634,
+      lng: 14.602,
+      detailHref: "blog-amalfi.html",
+      note: "Positano, Amalfi, Ravello—cliffside towns, lemon groves, and cobalt coves.",
+      bestMonths: "May–Sep",
+      tags: ["Scenic drives","Cliff towns"]
+    },
+    {
+      name: "The Ritz-Carlton, Nikko",
+      region: "Nikkō, Japan",
+      type: "resort",
+      lat: 36.741,
+      lng: 139.511,
+      detailHref: "blog-nikko.html",
+      note: "Onsen baths, lake views, and shrine day-trips out of Tokyo.",
+      bestMonths: "May–Oct",
+      tags: ["Onsen","Nature escape"]
+    },
+    {
+      name: "Burj Al Arab Jumeirah",
+      region: "Dubai, UAE",
+      type: "city",
+      lat: 25.141,
+      lng: 55.185,
+      detailHref: "blog-burj.html",
+      note: "All-suite sail-shaped icon with butlers and full-on Dubai drama.",
+      bestMonths: "Nov–Mar",
+      tags: ["Iconic hotel","Suites only"]
+    },
+    {
+      name: "Regent Seven Seas (Cruise Spotlight)",
+      region: "Multiple Regions",
+      type: "cruise",
+      lat: 25.774,
+      lng: -80.19,
+      detailHref: "blog-regent.html",
+      note: "All-inclusive luxury cruising with shore excursions and fine dining baked in.",
+      bestMonths: "Year-round (itinerary dependent)",
+      tags: ["All-inclusive cruise","Suites"]
+    }
+  ].map(d => ({ id: slug(d.name), ...d }));
+
+  const NOW = new Date();
+  const CUR_MON = NOW.getMonth() + 1;
+
+  const map = L.map("map", { scrollWheelZoom: true, zoomControl: true });
+
+  const basePositron = L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap &copy; CARTO"
+    }
+  ).addTo(map);
+
+  const markerCluster = L.markerClusterGroup({ showCoverageOnHover:false, spiderfyOnMaxZoom:true });
+  map.addLayer(markerCluster);
+
+  const bounds = L.latLngBounds();
+  const markerById = new Map();
+
+  function typeColor(t){
+    return ({resort:"#2ecc71",cruise:"#3498db",city:"#9b59b6"}[t] || "#d4af37");
+  }
+
+  function createPin(type){
+    const c = typeColor(type);
+    return L.divIcon({
+      className:"eg-pin",
+      html:`<svg width="26" height="38" viewBox="0 0 26 38" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="${c}"/><stop offset="100%" stop-color="#ffd97a"/>
+        </linearGradient></defs>
+        <path d="M13 0C5.82 0 0 5.82 0 13c0 9.41 13 25 13 25s13-15.59 13-25C26 5.82 20.18 0 13 0z" fill="url(#g)"/>
+        <circle cx="13" cy="13" r="5" fill="#111"/>
+      </svg>`,
+      iconSize:[26,38],
+      iconAnchor:[13,38],
+      popupAnchor:[0,-36]
+    });
+  }
+
+  function mapsLink(lat,lng){
+    return "https://www.google.com/maps/search/?api=1&query=" + lat + "," + lng;
+  }
+
+  function buildPills(d){
+    const pills = [];
+    if(d.type) pills.push(d.type.charAt(0).toUpperCase()+d.type.slice(1));
+    if(d.bestMonths) pills.push("Best: " + d.bestMonths);
+    if(Array.isArray(d.tags)) pills.push(...d.tags);
+    return pills;
+  }
+
+  function seasonNote(d){
+    const isCaribbean = /Jamaica|St\. Lucia|Bahamas|Florida/i.test(d.region || "");
+    if(!isCaribbean) return "";
+    if(CUR_MON >= 6 && CUR_MON <= 11){
+      return '<div class="pill" style="background:#fff3cd;border-color:#ffe69c;color:#664d03">Heads up: hurricane season window</div>';
+    }
+    return "";
+  }
+
+  DESTINATIONS.forEach(d => {
+    const marker = L.marker([d.lat,d.lng], {
+      icon: createPin(d.type),
+      title: d.name
+    });
+
+    const pills = buildPills(d).map(t => `<span class="pill">${t}</span>`).join("");
+    const season = seasonNote(d);
+
+    const detailBtn = d.detailHref
+      ? `<a class="btn" href="${d.detailHref}">Details</a>`
+      : "";
+
+    marker.bindPopup(`
+      <div>
+        <h3>${d.name}</h3>
+        <div class="meta">${d.region || ""}</div>
+        ${d.note ? `<p style="margin:.35rem 0;">${d.note}</p>` : ""}
+        <div class="pill-row">${pills}</div>
+        ${season}
+        <div class="actions" style="margin-top:.4rem;">
+          ${detailBtn}
+          <a class="btn" href="${mapsLink(d.lat,d.lng)}" target="_blank" rel="noopener noreferrer">Maps</a>
+        </div>
+      </div>
+    `);
+
+    markerCluster.addLayer(marker);
+    markerById.set(d.id, marker);
+    bounds.extend([d.lat,d.lng]);
+  });
+
+  map.fitBounds(bounds.pad(0.2));
+
+  const listEl = document.getElementById("dest-list");
+  const searchEl = document.getElementById("search");
+  const typeChips = Array.from(document.querySelectorAll('.chip[data-filter="type"]'));
+  const regionChipsRow = document.getElementById("region-chips");
+  const resultCountEl = document.getElementById("result-count");
+  const sortSelect = document.getElementById("sort");
+
+  const state = {
+    type: "all",
+    region: "all",
+    q: ""
+  };
+
+  function renderRegions(){
+    const regions = Array.from(new Set(DESTINATIONS.map(d => d.region))).sort();
+    regionChipsRow.innerHTML = "";
+
+    const all = document.createElement("label");
+    all.className = "chip";
+    all.dataset.filter = "region";
+    all.dataset.value = "all";
+    all.dataset.active = "true";
+    all.tabIndex = 0;
+    all.innerHTML = '<input type="radio" name="region" value="all" checked>All Regions';
+    regionChipsRow.appendChild(all);
+
+    regions.forEach(r => {
+      const lab = document.createElement("label");
+      lab.className = "chip";
+      lab.dataset.filter = "region";
+      lab.dataset.value = r;
+      lab.tabIndex = 0;
+      lab.innerHTML = `<input type="radio" name="region" value="${r}">${r}`;
+      regionChipsRow.appendChild(lab);
+    });
+  }
+  renderRegions();
+
+  function baseSearch(q){
+    if(!q || !q.trim()) return DESTINATIONS;
+    const term = q.trim().toLowerCase();
+    return DESTINATIONS.filter(d => {
+      return (
+        (d.name && d.name.toLowerCase().includes(term)) ||
+        (d.region && d.region.toLowerCase().includes(term)) ||
+        (d.note && d.note.toLowerCase().includes(term)) ||
+        (Array.isArray(d.tags) && d.tags.some(t => t.toLowerCase().includes(term)))
+      );
+    });
+  }
+
+  function applyFilters(){
+    const searched = baseSearch(state.q);
+    const filtered = searched.filter(d => {
+      const tOk = state.type === "all" || d.type === state.type;
+      const rOk = state.region === "all" || d.region === state.region;
+      return tOk && rOk;
+    });
+
+    const sortVal = sortSelect.value || "az";
+    filtered.sort((a,b) => {
+      if(sortVal === "region"){
+        const r = (a.region || "").localeCompare(b.region || "");
+        return r !== 0 ? r : a.name.localeCompare(b.name);
+      }
+      return a.name.localeCompare(b.name);
+    });
+
+    markerCluster.clearLayers();
+    filtered.forEach(d => {
+      const m = markerById.get(d.id);
+      if(m) markerCluster.addLayer(m);
+    });
+    if(filtered.length){
+      const b = L.latLngBounds(filtered.map(d => [d.lat,d.lng]));
+      map.fitBounds(b.pad(0.2));
+    } else {
+      map.fitBounds(bounds.pad(0.2));
+    }
+
+    renderList(filtered);
+  }
+
+  function renderList(items){
+    listEl.innerHTML = "";
+    items.forEach(d => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const pills = buildPills(d).map(t => `<span class="pill">${t}</span>`).join("");
+
+      card.innerHTML = `
+        <h3>${d.name}</h3>
+        <div class="meta">${d.region || ""}</div>
+        <div class="pill-row">${pills}</div>
+        ${seasonNote(d)}
+        ${d.note ? `<p style="margin:.35rem 0;">${d.note}</p>` : ""}
+        <div class="actions">
+          ${d.detailHref ? `<a class="btn" href="${d.detailHref}">Details</a>` : ""}
+          <a class="btn" href="${mapsLink(d.lat,d.lng)}" target="_blank" rel="noopener noreferrer">Maps</a>
+        </div>
+      `;
+
+      card.addEventListener("mouseenter", () => {
+        const m = markerById.get(d.id);
+        if(m) m.openPopup();
+      });
+      card.addEventListener("mouseleave", () => {
+        const m = markerById.get(d.id);
+        if(m) m.closePopup();
+      });
+      card.addEventListener("click", () => {
+        const m = markerById.get(d.id);
+        if(m){
+          map.setView(m.getLatLng(), 10, { animate:true });
+          m.openPopup();
+        }
+      });
+
+      listEl.appendChild(card);
+    });
+
+    resultCountEl.textContent =
+      items.length + " destination" + (items.length === 1 ? "" : "s") + " shown";
+  }
+
+  renderList(DESTINATIONS);
+
+  // Type chips
+  typeChips.forEach(chip => {
+    chip.addEventListener("click", () => {
+      typeChips.forEach(c => c.dataset.active = "false");
+      chip.dataset.active = "true";
+      state.type = chip.dataset.value;
+      applyFilters();
+    });
+    chip.addEventListener("keydown", e => {
+      if(e.key === "Enter" || e.key === " "){
+        e.preventDefault();
+        chip.click();
+      }
+    });
+  });
+
+  // Region chips (delegated)
+  regionChipsRow.addEventListener("click", e => {
+    const lab = e.target.closest(".chip");
+    if(!lab) return;
+    Array.from(regionChipsRow.querySelectorAll(".chip"))
+      .forEach(c => c.dataset.active = "false");
+    lab.dataset.active = "true";
+    state.region = lab.dataset.value;
+    applyFilters();
+  });
+  regionChipsRow.addEventListener("keydown", e => {
+    if((e.key === "Enter" || e.key === " ") && e.target.classList.contains("chip")){
+      e.preventDefault();
+      e.target.click();
+    }
+  });
+
+  // Search (basic debounce)
+  let searchTimer;
+  searchEl.addEventListener("input", e => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      state.q = e.target.value;
+      applyFilters();
+    }, 120);
+  });
+
+  // Sort
+  sortSelect.addEventListener("change", applyFilters);
+
+  // Locate
+  document.getElementById("locate").addEventListener("click", () => {
+    if(!navigator.geolocation){
+      alert("Geolocation not supported on this device.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const you = L.circleMarker([lat,lng], {
+          radius:7,
+          color:"#333",
+          fillColor:"#2f80ed",
+          fillOpacity:.9,
+          weight:1
+        }).addTo(map);
+        you.bindPopup("You are here").openPopup();
+        map.setView([lat,lng], 8, { animate:true });
+      },
+      () => alert("Unable to get your location right now.")
+    );
+  });
+
+  // Reset
+  document.getElementById("reset").addEventListener("click", () => {
+    state.type = "all";
+    state.region = "all";
+    state.q = "";
+    searchEl.value = "";
+
+    typeChips.forEach(c => {
+      c.dataset.active = c.dataset.value === "all" ? "true" : "false";
+    });
+    Array.from(regionChipsRow.querySelectorAll(".chip")).forEach((c,i) => {
+      c.dataset.active = i === 0 ? "true" : "false";
+    });
+
+    markerCluster.clearLayers();
+    DESTINATIONS.forEach(d => {
+      const m = markerById.get(d.id);
+      if(m) markerCluster.addLayer(m);
+    });
+    map.fitBounds(bounds.pad(0.2));
+    renderList(DESTINATIONS);
+  });
+
+  // CSV export
+  function downloadCSV(rows, filename){
+    if(!rows.length) return;
+    const header = ["name","region","type","lat","lng","detailHref","note","bestMonths"];
+    const lines = [header.join(",")];
+    rows.forEach(r => {
+      const vals = header.map(k => JSON.stringify(r[k] != null ? r[k] : ""));
+      lines.push(vals.join(","));
+    });
+    const csv = lines.join("\n");
+    const blob = new Blob([csv], {type:"text/csv"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename || "destinations.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  document.getElementById("download").addEventListener("click", () => {
+    // export visible set under current filters
+    const visible = baseSearch(state.q).filter(d => {
+      const tOk = state.type === "all" || d.type === state.type;
+      const rOk = state.region === "all" || d.region === state.region;
+      return tOk && rOk;
+    });
+    downloadCSV(visible, "elan-destinations.csv");
+  });
+
+  // JSON-LD for SEO
+  (function buildLD(){
+    try{
+      const items = DESTINATIONS.map((d,i) => ({
+        "@type":"TouristDestination",
+        "name":d.name,
+        "description":d.note,
+        "geo":{
+          "@type":"GeoCoordinates",
+          "latitude":d.lat,
+          "longitude":d.lng
+        },
+        "areaServed":d.region,
+        "url":d.detailHref || "https://elangetaways.com/destinations"
+      }));
+      const ld = {
+        "@context":"https://schema.org",
+        "@type":"ItemList",
+        "name":"Élan Getaways Featured Destinations",
+        "itemListElement":items.map((item,idx) => ({
+          "@type":"ListItem",
+          "position":idx+1,
+          "item":item
+        }))
+      };
+      document.getElementById("destinations-ld").textContent =
+        JSON.stringify(ld,null,2);
+    }catch(e){}
+  })();
+
+})();
+</script>
+
+<!-- Cloudflare Insights (existing pattern) -->
+<script
+  defer
+  src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015"
+  integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ=="
+  data-cf-beacon='{"version":"2024.11.0","token":"9fad812f299544bea902a96e85ce9cb3","r":1}'
+  crossorigin="anonymous">
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"9fad812f299544bea902a96e85ce9cb3","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
+
 
