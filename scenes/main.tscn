@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://dh5k3mxyn7h0xl"]
+[gd_scene load_steps=15 format=3 uid="uid://dh5k3mxyn7h0xl"]
 
 [ext_resource type="PackedScene" uid="uid://bwq8x3yn7h8xo" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" uid="uid://c8k3mxyn7h9xp" path="res://scenes/killy.tscn" id="2_killy"]
@@ -24,11 +24,25 @@ fog_enabled = true
 fog_light_color = Color(0.3, 0.3, 0.35, 1)
 fog_density = 0.01
 
+[sub_resource type="BoxMesh" id="BoxMesh_ground"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_wall"]
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
 size = Vector3(50, 0.2, 50)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall"]
+size = Vector3(50, 5, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall_side"]
+size = Vector3(0.5, 5, 50)
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_trigger"]
 size = Vector3(4, 3, 4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+albedo_color = Color(0.3, 0.3, 0.3, 1)
+roughness = 0.8
 
 [node name="Main" type="Node3D"]
 
@@ -49,7 +63,8 @@ shape = SubResource("BoxShape3D_ground")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
 transform = Transform3D(50, 0, 0, 0, 0.2, 0, 0, 0, 50, 0, -0.1, 0)
-mesh = BoxMesh.new()
+material_override = SubResource("StandardMaterial3D_floor")
+mesh = SubResource("BoxMesh_ground")
 
 [node name="Walls" type="Node3D" parent="."]
 
@@ -58,41 +73,40 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -25)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/WallNorth"]
 transform = Transform3D(50, 0, 0, 0, 5, 0, 0, 0, 0.5, 0, 0, 0)
-mesh = BoxMesh.new()
+mesh = SubResource("BoxMesh_wall")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/WallNorth"]
-shape = SubResource("BoxShape3D_ground")
+shape = SubResource("BoxShape3D_wall")
 
 [node name="WallSouth" type="StaticBody3D" parent="Walls"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 25)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/WallSouth"]
 transform = Transform3D(50, 0, 0, 0, 5, 0, 0, 0, 0.5, 0, 0, 0)
-mesh = BoxMesh.new()
+mesh = SubResource("BoxMesh_wall")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/WallSouth"]
-shape = SubResource("BoxShape3D_ground")
+shape = SubResource("BoxShape3D_wall")
 
 [node name="WallEast" type="StaticBody3D" parent="Walls"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 2.5, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/WallEast"]
 transform = Transform3D(0.5, 0, 0, 0, 5, 0, 0, 0, 50, 0, 0, 0)
-mesh = BoxMesh.new()
+mesh = SubResource("BoxMesh_wall")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/WallEast"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
-shape = SubResource("BoxShape3D_ground")
+shape = SubResource("BoxShape3D_wall_side")
 
 [node name="WallWest" type="StaticBody3D" parent="Walls"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 2.5, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/WallWest"]
 transform = Transform3D(0.5, 0, 0, 0, 5, 0, 0, 0, 50, 0, 0, 0)
-mesh = BoxMesh.new()
+mesh = SubResource("BoxMesh_wall")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/WallWest"]
-shape = SubResource("BoxShape3D_ground")
+shape = SubResource("BoxShape3D_wall_side")
 
 [node name="SpotLight3D" type="SpotLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, -10, 5, -10)
@@ -124,5 +138,3 @@ fear_increase = 30.0
 shape = SubResource("BoxShape3D_trigger")
 
 [node name="HUD" parent="." instance=ExtResource("4_hud")]
-
-[connection signal="ready" from="Killy" to="Killy" method="_on_ready"]
